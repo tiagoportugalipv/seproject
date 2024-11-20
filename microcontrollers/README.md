@@ -1,4 +1,4 @@
-# ESP32
+# ESP
 
 ## Instalar boards
 
