@@ -20,3 +20,4 @@
 - [DHT](https://github.com/adafruit/DHT-sensor-library/archive/master.zip)
     - [Adafruit Unified Sensor driver](https://github.com/adafruit/Adafruit_Sensor/archive/master.zip)
 - [MQ-2](https://github.com/labay11/MQ-2-sensor-library/archive/master.zip)
+- [LiquidCrystal](https://github.com/marcoschwartz/LiquidCrystal_I2C/archive/master.zip)
