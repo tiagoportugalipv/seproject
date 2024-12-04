@@ -78,6 +78,8 @@ void loop(){
 
   // Read Values
 
+  Serial.print("\nMQ2 analog value: "); Serial.print(analogRead(mq2Pin));
+
   // Potenciometer (for testing)
   int potenValue = analogRead(potenPin);
 
