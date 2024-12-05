@@ -24,4 +24,11 @@
     - [Adafruit-MCP23017](https://github.com/adafruit/Adafruit-MCP23017-Arduino-Library/archive/master.zip)
 
 
+## Usefull links
+
+- [NodeMCU V3 Pinout](https://mischianti.org/wp-content/uploads/2021/10/NodeMcu-V3-CH340-Lua-ESP8266-pinout-mischianti-low-resolution.jpg)
+
+- [I2C/SPI LCD backpack adapter especificações](https://cdn-learn.adafruit.com/downloads/pdf/i2c-spi-lcd-backpack.pdf)
+
+
 
