@@ -39,12 +39,9 @@ void sendAlert(Adafruit_LiquidCrystal screen,int buzzerpin,int alertcode,String 
     }
 
   }
-  
 
 }
 
-// Connect via i2c, default address #0 (A0-A2 not jumpered)
-Adafruit_LiquidCrystal lcd(0);
 
 bool alertdone = false;
 
