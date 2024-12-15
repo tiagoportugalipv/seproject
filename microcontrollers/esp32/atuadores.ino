@@ -11,6 +11,7 @@
 
   // Pins
 
+  #define VIBRATION_MOTOR D4
   #define BUZZER_PIN D3
   #define MUTEBUTTON D8
   #define ALERTCODERED D5 // 3
@@ -66,6 +67,7 @@ void updateAlert() {
   if (isAlertOn && (currentTime - alertStartTime >= alertDuration)) {
     // Turn off alert
     lcd.setBacklight(LOW);
+    digitalWrite(VIBRATION_MOTOR, LOW);
     digitalWrite(ALERTCODERED, LOW);
     digitalWrite(ALERTCODEYELLOW , LOW);
     digitalWrite(ALERTCODEGREEN , LOW);
@@ -86,6 +88,7 @@ void updateAlert() {
     lcd.print(currentAlertMessage);
     lcd.setBacklight(HIGH);
     digitalWrite(alertcodeToPin(currentAlertCode), HIGH);
+    digitalWrite(VIBRATION_MOTOR, HIGH);
 
     switch(currentAlertCode) {
       case 1:
@@ -208,6 +211,7 @@ void setup(){
   pinMode(ALERTCODEYELLOW, OUTPUT);
   pinMode(ALERTCODEGREEN, OUTPUT);
   pinMode(MUTEBUTTON, INPUT);
+  pinMode(VIBRATION_MOTOR, OUTPUT);
 
   // MQTT configuration
 
