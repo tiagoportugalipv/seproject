@@ -9,18 +9,13 @@
   // Properties
   const int area = 1;
 
-  // Thresholds stuff
-  constexpr int potenThresholds[] = {300, 700, 1000};
-  constexpr float tempThresholds[] = {35, 40, 50};
-  constexpr int humThresholds[] = {70, 80, 90};
-  constexpr float lpgThresholds[] = {30000, 60000, 100000};
-  constexpr float coThresholds[] = {30000, 60000, 100000};
-  constexpr float smokeThresholds[] = {30000, 60000, 100000};
-
-  enum ValueType {
-    FLOAT_TYPE,
-    INT_TYPE
-  };
+  // Thresholds stuff       {value, code, condition to be tested} : 0 - less or equal, 1 - greater or equal, 2 equal
+  constexpr int potenThresholds[][3] = {{300,1,1},{700,2,1},{1000,3,1}};
+  constexpr float tempThresholds[][3] = {{0,2,2}, {10,1,0}, {35,1,1}, {40,2,1}, {45,3,1}};
+  constexpr int humThresholds[][3] = {{15,3,0},{30,2,0},{40,1,0}};
+  constexpr float lpgThresholds[][3] = {{30000,1,1},{60000,2,1},{100000,3,1}};
+  constexpr float coThresholds[][3] = {{30000,1,1},{60000,2,1},{100000,3,1}};
+  constexpr float smokeThresholds[][3] = {{30000,1,1},{60000,2,1},{100000,3,1}};
 
   // Networking
   const char* ssid = "ferrari";
@@ -70,6 +65,8 @@ String createWarning(String tipo,String value, String unit, int code){
 
   JsonDocument msg;
   char msgOutput[256];
+  String areaChannel = "avisos/";
+  areaChannel += String(area);
 
   msg["codigo"]=code;
 
@@ -89,51 +86,66 @@ String createWarning(String tipo,String value, String unit, int code){
   }
 
   serializeJson(msg, msgOutput);
-  sendMessage("info",msgOutput);
+  sendMessage(areaChannel.c_str(),msgOutput);
   return String(msgOutput);
 
 }
 
-void checkValue(void* value, void** thresholds, ValueType type, const String& tipo, const String& unit) {
-  if (type == FLOAT_TYPE) {
-    float floatValue = *((float*)value);
-    float* floatdic = *((float**)thresholds);
 
-    if (floatValue > floatdic[2]) {
-      createWarning(tipo, String(floatValue), unit, 3);
-      return;
-    }
+void checkValue(float value, const float thresholds[][3], int n_thresholds, const String& tipo, const String& unit) {
+  for (int i = 0; i < n_thresholds; i++) {
+    float threshold_value = thresholds[i][0];
+    int code = static_cast<int>(thresholds[i][1]);
+  
+    switch (static_cast<int>(thresholds[i][2])) {
+      case 0:
+        if (value <= threshold_value) {
+          createWarning(tipo, String(value), unit, 2);
+        }
+        break;
 
-    if (floatValue > floatdic[1]) {
-      createWarning(tipo, String(floatValue), unit, 2);
-      return;
-    }
+      case 1:
+        if (value >= threshold_value) {
+          createWarning(tipo, String(value), unit, 2);
+        }
+        break;
 
-    if (floatValue > floatdic[0]) {
-      createWarning(tipo, String(floatValue), unit, 1);
-      return;
-    }
-  }
-  else if (type == INT_TYPE) {
-    int intValue = *((int*)value);
-    int* intdic = *((int**)thresholds);
-
-    if (intValue > intdic[2]) {
-      createWarning(tipo, String(intValue), unit, 3);
-      return;
-    }
-
-    if (intValue > intdic[1]) {
-      createWarning(tipo, String(intValue), unit, 2);
-      return;
-    }
-
-    if (intValue > intdic[0]) {
-      createWarning(tipo, String(intValue), unit, 1);
-      return;
+      case 2:
+        if (value == threshold_value) {
+          createWarning(tipo, String(value), unit, 2);
+        }
+        break;
     }
   }
 }
+
+void checkValue(int value, const int thresholds[][3], int n_thresholds, const String& tipo, const String& unit) {
+  for (int i = 0; i < n_thresholds; i++) {
+    int threshold_value = thresholds[i][0];
+    int code = thresholds[i][1];
+  
+    switch (thresholds[i][2]) {
+      case 0:
+        if (value <= threshold_value) {
+          createWarning(tipo, String(value), unit, 2);
+        }
+        break;
+
+      case 1:
+        if (value >= threshold_value) {
+          createWarning(tipo, String(value), unit, 2);
+        }
+        break;
+
+      case 2:
+        if (value == threshold_value) {
+          createWarning(tipo, String(value), unit, 2);
+        }
+        break;
+    }
+  }
+}
+
 
 
 void setup_wifi(){
@@ -163,12 +175,14 @@ void setup(){
     pinMode(dhtPin,INPUT);
     pinMode(potenPin,INPUT);
     dht.begin();
+    mq2.begin();
+    delay(10000)
 
     setup_wifi();
 
 }
 
-void loop(){
+void loop() {
 
   if (!client.connected()) {
     client.connect("sentinelaClient");
@@ -176,37 +190,32 @@ void loop(){
 
   client.loop();
 
-  // Read Values
-
-  Serial.print("\nMQ2 analog value: "); Serial.print(analogRead(mq2Pin));
-
   // Potenciometer (for testing)
   int potenValue = analogRead(potenPin);
-  createInfo("potenciometer", "" ,String(potenValue) );
-  checkValue((void *)&potenValue,(void **)potenThresholds,INT_TYPE, "test","");
+  createInfo("potenciometer", "", String(potenValue));
+  checkValue(potenValue, potenThresholds, sizeof(potenThresholds)/sizeof(potenThresholds[0]), "test", "");
 
   // DHT
   float tempValue = dht.readTemperature();
-  createInfo("temperature", "C" ,String(tempValue) );
-  checkValue((void *)&tempValue,(void **)tempThresholds,FLOAT_TYPE,"temperature","C");
+  createInfo("temperature", "C", String(tempValue));
+  checkValue(tempValue, tempThresholds, sizeof(tempThresholds)/sizeof(tempThresholds[0]), "temperature", "C");
 
   float humValue = dht.readHumidity();
-  createInfo("hummidity", "%" ,String(humValue) );
-  checkValue((void *)&humValue, (void **)humThresholds,FLOAT_TYPE,"humidity", "%");
+  createInfo("humidity", "%", String(humValue));
+  checkValue(humValue, humThresholds, sizeof(humThresholds)/sizeof(humThresholds[0]), "humidity", "%");
 
-
-  // DHT
+  // MQ2 Sensor
   float lpgValue = mq2.readLPG();
-  createInfo("lpg", "ppm" ,String(humValue) );
-  checkValue((void *)&lpgValue, (void **)lpgThresholds,FLOAT_TYPE,"lpg" ,"ppm");
+  createInfo("lpg", "ppm", String(lpgValue)); // Fixed from humValue
+  checkValue(lpgValue, lpgThresholds, sizeof(lpgThresholds)/sizeof(lpgThresholds[0]), "lpg", "ppm");
 
   float coValue = mq2.readCO();
-  createInfo("co", "ppm" ,String(humValue) );
-  checkValue((void *)&coValue, (void **)coThresholds,FLOAT_TYPE, "co","ppm");
+  createInfo("co", "ppm", String(coValue)); // Fixed from humValue
+  checkValue(coValue, coThresholds, sizeof(coThresholds)/sizeof(coThresholds[0]), "co", "ppm");
 
   float smokeValue = mq2.readSmoke();
-  createInfo("smoke", "ppm" ,String(humValue) );
-  checkValue((void *)&smokeValue, (void **)smokeThresholds,FLOAT_TYPE, "smoke","ppm");
+  createInfo("smoke", "ppm", String(smokeValue)); // Fixed from humValue
+  checkValue(smokeValue, smokeThresholds, sizeof(smokeThresholds)/sizeof(smokeThresholds[0]), "smoke", "ppm");
 
   delay(2000);
 

@@ -1,6 +1,5 @@
 // https://randomnerdtutorials.com/esp32-mqtt-publish-subscribe-arduino-ide/
 
-
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -28,7 +27,7 @@
   const int area = 3;
 
   // Networking
-  const char* ssid = "ferrari";
+  const char* ssid =ferrari ";
   const char* password = "spothot_strokegot";
   const char* mqtt_server = "135.236.153.73";
   WiFiClient espClient;
